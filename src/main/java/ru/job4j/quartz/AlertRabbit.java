@@ -10,23 +10,30 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 
 public class AlertRabbit {
-    public static Connection initConnection() throws SQLException, IOException, ClassNotFoundException {
-        try (InputStream in = AlertRabbit.class.getClassLoader()
-                .getResourceAsStream("rabbit.properties")) {
-            Properties config = new Properties();
-            config.load(in);
+    public static Connection initConnection(Properties config) throws SQLException, ClassNotFoundException {
             Class.forName(config.getProperty("connection.driver_class"));
             return DriverManager.getConnection(
                     config.getProperty("connection.url"),
                     config.getProperty("connection.username"),
                     config.getProperty("connection.password")
             );
+    }
+
+    public static Properties readProperties() {
+        Properties config = new Properties();
+        try (InputStream in = AlertRabbit.class.getClassLoader()
+                .getResourceAsStream("rabbit.properties")) {
+            config.load(in);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return config;
     }
 
     public static void main(String[] args) throws InterruptedException, SQLException,
-            IOException, ClassNotFoundException {
-        try (Connection connection = initConnection()){
+            ClassNotFoundException {
+        Properties config = readProperties();
+        try (Connection connection = initConnection(config)) {
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
             JobDataMap data = new JobDataMap();
@@ -35,7 +42,7 @@ public class AlertRabbit {
                     .usingJobData(data)
                     .build();
             SimpleScheduleBuilder times = SimpleScheduleBuilder.simpleSchedule()
-                    .withIntervalInSeconds(5)
+                    .withIntervalInSeconds(Integer.parseInt(config.getProperty("rabbit.interval")))
                     .repeatForever();
             Trigger trigger = TriggerBuilder.newTrigger()
                     .startNow()
