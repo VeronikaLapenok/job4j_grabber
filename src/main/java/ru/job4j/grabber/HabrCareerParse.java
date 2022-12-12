@@ -23,24 +23,33 @@ public class HabrCareerParse implements Parse {
     }
 
     @Override
-    public List<Post> list(String link) throws IOException {
+    public List<Post> list(String link) {
         List<Post> vacancyList = new ArrayList<>();
-        for (int i = 0; i <= COUNT_PAGE ; i++) {
+        for (int i = 1; i <= COUNT_PAGE ; i++) {
             Connection connection = Jsoup.connect(String.format("%s?page=%s", link, i));
-            Document document = connection.get();
+            Document document = null;
+            try {
+                document = connection.get();
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
             Elements rows = document.select(".vacancy-card__inner");
-            rows.forEach(row -> {
-                Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
-                Element dataElement = row.select(".vacancy-card__date").first().child(0);
-                String vacancyName = titleElement.text();
-                String date = dataElement.attr("datetime");
-                String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                String description = retrieveDescription(vacancyLink);
-                vacancyList.add(new Post(vacancyName, vacancyLink, description, dateTimeParser.parse(date)));
-            });
+            for (Element row : rows) {
+                vacancyList.add(parsePost(row));
+            }
         }
         return vacancyList;
+    }
+
+    private Post parsePost(Element row) {
+        Element titleElement = row.select(".vacancy-card__title").first();
+        Element linkElement = titleElement.child(0);
+        Element dataElement = row.select(".vacancy-card__date").first().child(0);
+        String vacancyName = titleElement.text();
+        String date = dataElement.attr("datetime");
+        String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+        String description = retrieveDescription(vacancyLink);
+        return new Post(vacancyName, vacancyLink, description, dateTimeParser.parse(date));
     }
 
     private String retrieveDescription(String link) {
