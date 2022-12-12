@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 
 public class AlertRabbit {
-    public static Connection initConnection(Properties config) throws SQLException, ClassNotFoundException {
+    public static Connection initConnection(Properties config)
+            throws SQLException, ClassNotFoundException {
             Class.forName(config.getProperty("connection.driver_class"));
             return DriverManager.getConnection(
                     config.getProperty("connection.url"),
@@ -61,6 +62,7 @@ public class AlertRabbit {
         public Rabbit() {
             System.out.println(hashCode());
         }
+
         @Override
         public void execute(JobExecutionContext jobExecutionContext) {
             System.out.println("Rabbit runs here ...");

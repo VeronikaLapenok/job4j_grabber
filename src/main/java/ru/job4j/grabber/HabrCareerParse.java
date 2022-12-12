@@ -10,9 +10,9 @@ import java.io.IOException;
 
 public class HabrCareerParse {
     private static final String SOURCE_LINK = "https://career.habr.com";
-    private static final String PAGE_LINK = String.format("%s/vacancies/java_developer", SOURCE_LINK);
+    private static final String PAGE_LINK = String.format(
+            "%s/vacancies/java_developer", SOURCE_LINK);
     private static final int COUNT_PAGE = 5;
-
 
     private String retrieveDescription(String link) {
         Connection connection = Jsoup.connect(link);
@@ -26,7 +26,7 @@ public class HabrCareerParse {
     }
 
     public static void main(String[] args) throws IOException {
-        for (int i = 1; i <= COUNT_PAGE ; i++) {
+        for (int i = 1; i <= COUNT_PAGE; i++) {
             Connection connection = Jsoup.connect(String.format("%s?page=%s", PAGE_LINK, i));
             Document document = connection.get();
             Elements rows = document.select(".vacancy-card__inner");

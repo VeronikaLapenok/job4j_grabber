@@ -74,8 +74,8 @@ public class Post {
             return false;
         }
         Post post = (Post) o;
-        return id == post.id &&
-                Objects.equals(link, post.link);
+        return id == post.id
+                && Objects.equals(link, post.link);
     }
 
     @Override
