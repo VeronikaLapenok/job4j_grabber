@@ -1,5 +1,8 @@
 package ru.job4j.grabber;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.Properties;
 
 public class PsqlStore implements Store, AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(PsqlStore.class.getName());
     private Connection connection;
 
     public PsqlStore(Properties config) {
@@ -21,7 +25,7 @@ public class PsqlStore implements Store, AutoCloseable {
                     config.getProperty("jdbc.password")
             );
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            LOG.error("Invalid connection");
         }
     }
 
@@ -29,7 +33,8 @@ public class PsqlStore implements Store, AutoCloseable {
     public void save(Post post) {
         try (PreparedStatement statement =
                 connection.prepareStatement(
-                        "insert into post (name, link, description, created) values (?, ?, ?, ?) on conflict (link) do nothing",
+                        "insert into post (name, link, description, created) values (?, ?, ?, ?)" +
+                                " on conflict (link) do nothing",
                         Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getLink());
@@ -42,7 +47,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 }
             }
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+            LOG.error("Post saving error");
         }
     }
 
@@ -56,7 +61,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 }
             }
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+            LOG.error("All posts getting error");
         }
         return posts;
     }
@@ -72,7 +77,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 post = createResultPost(resultSet);
             }
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+            LOG.error("Finding post by ID error");
         }
         return post;
     }
@@ -93,7 +98,7 @@ public class PsqlStore implements Store, AutoCloseable {
                 .getResourceAsStream("post.properties")) {
             config.load(in);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Loading properties error");
         }
         return config;
     }
@@ -113,7 +118,7 @@ public class PsqlStore implements Store, AutoCloseable {
             psqlStore.save(post);
             System.out.println(psqlStore.findById(1));
         } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
+            LOG.error("Demonstrating methods error");
         }
     }
 }
