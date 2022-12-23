@@ -47,9 +47,9 @@ public class Grabber implements Grab {
     }
 
     public static class GrabJob implements Job {
-        private final String LINK = "https://career.habr.com/vacancies/java_developer?page=";
+        private static final String LINK = "https://career.habr.com/vacancies/java_developer?page=";
         @Override
-        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        public void execute(JobExecutionContext jobExecutionContext) {
             JobDataMap map = jobExecutionContext.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
